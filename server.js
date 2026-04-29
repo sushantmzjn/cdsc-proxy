@@ -25,15 +25,46 @@ app.get('/companies', async (req, res) => {
 app.post('/check', async (req, res) => {
   try {
     const { companyShareId, boid } = req.body;
+
+    // Step 1: Get cookies by visiting the page first
+    const session = await axios.get(
+      'https://iporesult.cdsc.com.np/',
+      { headers: HEADERS }
+    );
+    const cookies = session.headers['set-cookie']?.map(c => c.split(';')[0]).join('; ') || '';
+
+    // Step 2: Use those cookies in the POST
     const response = await axios.post(
       'https://iporesult.cdsc.com.np/result/result/check',
       { companyShareId: String(companyShareId), boid },
-      { headers: { ...HEADERS, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...HEADERS, 
+          'Content-Type': 'application/json',
+          'Cookie': cookies
+        } 
+      }
     );
     res.json(response.data);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
+
+
+
+// app.post('/check', async (req, res) => {
+//   try {
+//     const { companyShareId, boid } = req.body;
+//     const response = await axios.post(
+//       'https://iporesult.cdsc.com.np/result/result/check',
+//       { companyShareId: String(companyShareId), boid },
+//       { headers: { ...HEADERS, 'Content-Type': 'application/json' } }
+//     );
+//     res.json(response.data);
+//   } catch (e) {
+//     res.status(500).json({ error: e.message });
+//   }
+// });
 
 app.listen(process.env.PORT || 3000, () => console.log('Proxy running on port 3000'));
